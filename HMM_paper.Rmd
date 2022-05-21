@@ -1,0 +1,581 @@
+---
+title: "Hidden Markov Models"
+subtitle: "From 'Speech and Language Processing' by Daniel Jurafsky & James H. Martin"
+author: "Jaeyong Lee"
+output:
+  html_notebook:
+    toc: yes
+    code_folding: "none"
+---
+
+<style type="text/css">
+h1.title {
+  font-size: 30px;
+  text-align: center;
+}
+h3.subtitle {
+  font-size: 20px;
+  text-align: center;
+}
+h4.author { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+  text-align: right;
+}
+body{
+   font-size: 17px;  # body is for normal text
+}
+td{
+   font-size: 12px;  # td is for table data
+}
+</style>
+
+\
+\
+
+Many of the texts and figures are from 'Speech and Language Processing' by Daniel Jurafsky & James H. Martin.
+
+\
+\
+\
+\
+
+### 1. Markov Chains
+
+\
+
+A **_Markov chain_** is a model that tells us something about the probabilities of sequences of random variables, states, each of which can take on values from some set. A Markov chain makes a strong assumption that if we want to predict the future in the sequence, all that matters is the current state. It is based on the following assumption.
+
+\
+
+(First-order) **_Markov assumption:_**
+
+\
+
+$$
+P(q_i=a|q_1,\dotsc,q_{i-1}) = P(q_i=a|q_{i-1}) \tag{A.1}
+$$
+
+\
+\
+
+The following figure shows an example of a Markov chain.
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss1.png)
+
+\
+
+Figure A.1 shows a Markov chain for assigning a probability to a sequence of states. The states are represented as nodes in the graph, and the transitions with their probabilities, as edges. Since the transitions are probabilities, **the values of arcs leaving a given state must sum to 1**.
+
+\
+\
+
+Formally, a Markov chain is specified by the following components:
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss2.png)
+
+\
+
+The transitional probability matrix (TPM) for Fig A.1 (a) would be as following
+
+\
+
+$$
+\mathrm{A} = 
+\begin{bmatrix}
+0.6 & 0.1 & 0.3 \\ 
+0.1 & 0.8 & 0.1 \\ 
+0.3 & 0.1 & 0.6
+\end{bmatrix}
+$$
+
+\
+\
+\
+
+#### Example:
+
+\
+
+Let's use the sample probabilities in Fig A.1 (a) (with $\pi = [.1, \ .7, \ .2]$) to compute the probability of each of the following sequences:
+
+\
+
+$$
+\mathrm{hot \ \ hot \ \ hot \ \ hot} \tag{1}
+$$
+
+$$
+\mathrm{cold \ \ hot \ \ cold \ \ hot} \tag{2}
+$$
+
+\
+
+```{r}
+# transitional probability matrix (TPM):
+tpm <- matrix(c(0.6,0.1,0.3,0.1,0.8,0.1,0.3,0.1,0.6),nrow=3,byrow=T)
+tpm
+```
+
+```{r}
+# Initial probability distribution
+pi <- matrix(c(0.1, 0.7, 0.2), nrow=1, byrow=T)  # this was given
+pi
+```
+
+\
+
+For sequence (1), the probability is
+
+\
+
+$$
+\pi_1 \times a_{11} \times a_{11} \times a_{11}
+$$
+
+\
+
+where $a_{ij}$ is the (i,j) component of transitional probability matrix A.
+
+\
+
+```{r}
+pi[,1]*tpm[1,1]*tpm[1,1]*tpm[1,1]
+```
+
+
+\
+\
+
+For sequence (2), the probability is
+
+\
+
+$$
+\pi_2 \times a_{21} \times a_{12} \times a_{21}
+$$
+
+\
+
+```{r}
+options(scipen = 1)  # to remove scientific notation
+pi[,2]*tpm[2,1]*tpm[1,2]*tpm[2,1]
+```
+
+\
+\
+\
+\
+
+### 2. The Hidden Markov Model
+
+\
+
+A Markov chain is useful when we need to compute a probability for a sequence of observable events. In many cases, however, the events we are interested in are hidden: we don't observe them directly.
+
+A **_hidden Markov model (HMM)_** allows us to talk about **both observed** events and **hidden** events that we think of as causal factors in our probabilistic model. An HMM is specified by the following components:
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss3.png)
+
+\
+\
+
+A first-order HMM instantiates two simplifying assumptions. 
+
+\
+
+First, as with a first-order Markov chain, the probability of a particular state depends only on the previous state.
+
+- **_Markov assumption_**:
+
+\
+
+$$
+P(q_i|q_1,\dotsc,q_{i-1}) = P(q_i|q_{i-1}) \tag{A.4}
+$$
+
+\
+
+Second, the probability of an output observation $o_i$ depends only on the state that produced the observation $q_i$ and not on any other states or any other observations.
+
+- **_Output independence_**:
+
+\
+
+$$
+P(o_i|q_1,\dotsc,q_{T},o_1,\dotsc,o_{T}) = P(o_i|q_i) \tag{A.5}
+$$
+
+\
+\
+\
+
+#### Example:
+
+\
+
+Consider such a task: given a sequence of observations $O$ ({1,2,3} representing the number of ice creames eaten by Jason on a given day), find the "hidden" sequence of $Q$ of weather states (H or C) which caused Jason to eat the ice cream. This is described in the following figure.
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss4.png)
+
+\
+
+The transition probability matrix for this example is
+
+\
+
+$$
+A = \begin{bmatrix}
+0.5 & 0.5 \\ 
+0.4 & 0.6
+\end{bmatrix}
+$$
+
+\
+\
+\
+
+Note that, Hidden Markov models should be characterized by **_three fundamental problems_**:
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss5.png)
+
+\
+
+where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods (also called, emission probabilities)
+
+\
+\
+\
+\
+
+### 3. Likelihood Computation: The Forward Algorithm
+
+\
+
+The first problem is to compute the likelihood of a particular observation sequence. For example, given the ice cream example in Fig. A.2, what is the probability of the sequence $3 \ \ 1 \ \ 3$? This is formally described as the following.
+
+\
+
+**_Computing Likelihood_**:
+
+\
+
+Given an HMM $\lambda = (A,B)$ and an observation sequence $O$, determine the likelihood $P(O|\lambda)$.
+
+\
+\
+
+**If we KNOW the sequence hidden states**, we can calculate the likelihood as the following.
+
+\
+
+Recall that for HMM, **each hidden state produces only a single observation**. Thus, the sequence of hidden states and the sequence of observations have the same length (note that segmental HMMs and semi-HMMs don't satisfy this).  Given this **one-to-one mapping** and the Markov assumptions for a particular hidden state sequence $Q = q_0, q_1, \dotsc, q_T$ and an observation sequence $O = o_1, o_2, \dotsc, o_T$, the likelihood of the observation sequence is
+
+\
+
+$$
+P(O|Q) = \prod_{i=1}^{T}P(o_i|q_i) \tag{A.6}
+$$
+
+\
+\
+
+#### Example:
+
+\
+
+The computation of the forward probability for the ice cream observation $3 \ \ 1 \ \ 3$ from a hidden state sequence $hot \ \ hot \ \ cold$ is as the following.
+
+\
+
+$$
+P(3 \ \ 1 \ \ 3|hot \ \ hot \ \ cold) = P(3|hot) \times P(1|hot) \times P(3|cold) \tag{A.7}
+$$
+
+\
+
+The following figure shows a graphic representation of this computation.
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss6.png)
+
+\
+\
+\
+
+Most of the time, however, we don't know the sequence of hidden states.
+
+\
+
+**If we DON'T KNOW the sequence of hidden states**, we can calculate the likelihood as the following.
+
+\
+
+First, **compute the joint probability** of being in a particular hidden state sequence $Q$ and generating a particular observation sequence $O$:
+
+\
+
+$$
+P(O,Q) = P(O|Q) \times P(Q) = \prod_{i=1}^{T} P(o_i|q_i) \times \prod_{i=1}^{T} P(q_i|q_{i-1}) \tag{A.8}
+$$
+
+\
+
+Then we can **compute the total probability of the observation sequence** just by summing over all possible hidden state sequences.
+
+\
+
+$$
+P(O) = \sum_{Q} P(O,Q) = \sum_{Q} P(O|Q)P(Q) \tag{A.10}
+$$
+
+\
+\
+
+#### Example:
+
+\
+
+For the ice cream example, the computation of the joint probability of the observation $3 \ \ 1 \ \ 3$ and the hidden state sequence $hot \ \ hot \ \ cold$ is
+
+\
+
+$$
+\begin{align*}
+P(3 \ \ 1 \ \ 3, \ hot \ \ hot \ \ cold) = \ & P(3|hot) \times P(1|hot) \times P(3|cold) \\ 
+ &\times P(hot|start) \times P(hot|hot) \times  P(cold|hot)
+\end{align*}
+$$
+
+\
+
+and the total probability of the observations is
+
+$$
+P(3 \ \ 1 \ \ 3) = P(3 \ \ 1 \ \ 3, \ cold \ \ cold \ \ cold) + P(3 \ \ 1 \ \ 3, \ cold \ \ cold \ \ hot) + P(3 \ \ 1 \ \ 3, \ hot \ \ hot \ \ cold) + \dots
+$$
+
+\
+\
+\
+
+For an HMM with $N$ hidden states and an observation sequence of $T$ observations, there are $N^T$ possible hidden sequences. For real tasks, where $N$ and $T$ are both large, $N^T$ can be too much to compute the total observation likelihood.
+
+\
+\
+
+**_Forward algorithm_**:
+
+\
+
+Instead of using such an extremely exponential algorithm, we use an efficient $O(N^2T)$ algorithm called the **forward algorithm**. The forward algorithm is a kind of **dynamic programming** algorithm, that is, an algorithm that uses a table to store intermediate values as it builds up the probability of the observation sequence. The forward algorithm computes the observation probability by summing over the probabilities of all possible hidden state paths that could generate the observation sequence, but it does so efficiently by implicitly folding each of these paths into a single **_forward trellis_**.
+
+\
+
+The following figure shows an example of the forward trellis.
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss7.png)
+
+\
+
+Each cell of the forward algorithm trellis $\alpha_t(j)$ represents the probability of being in state $j$ after seeing the first $t$ observations, given $\lambda = (A,B)$ (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
+
+The value of each cell $\alpha_t(j)$ is computed by summing over the probabilities of every path that could lead us to this cell. Formally, each cell expresses the following probability:
+
+\
+
+$$
+\alpha_t(j) = P(o_1, o_2, \dots, o_t, q_t=j|\lambda) \tag{A.11}
+$$
+
+\
+
+where, $q_t = j$ means "the $t$th state in the sequence of states is state $j$". 
+
+\
+
+We compute this probability $\alpha_t(j)$ by summing over the extensions of all the paths that lead to the current cell. For a given state $q_j$ at time $t$, the value $\alpha_t(j)$ is computed as
+
+\
+
+$$
+\alpha_t(j) = \sum_{i=1}^{N} \alpha_{t-1}(i)a_{ij}b_j(o_t) \tag{A.12}
+$$
+
+\
+
+The three factors that are multiplied in Eq. A.12 in extending the previous paths to compute the forward probability at time $t$ are
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss8.png)
+
+\
+\
+
+#### Example:
+
+\
+
+Consider the computation in Fig. A.5 of $\alpha_2(2)$, the forward probability of being at time step 2 in state 2 having generate the partial observation $3 \ \ 1$.
+
+We compute by extending the $\alpha$ probabilities from time step 1, via two paths, each extension consisting of the three factors above: 
+
+\
+
+$$
+\alpha_1(1) \times P(H|C) \times P(1|H)
+$$
+
+\
+
+where, $\alpha_1(1)$: the previous forward path probability, $P(H|C)$: the transition probability, and $P(1|H)$: the state observation likelihood, and
+
+\
+
+$$
+\alpha_1(2) \times P(H|H) \times P(1|H)
+$$
+
+\
+
+where, $\alpha_1(2)$: the previous forward path probability, $P(H|H)$: the transition probability, and $P(1|H)$: the state observation likelihood.
+
+\
+\
+
+The following figure shows another visualization of this induction step for computing the value in one new cell of the trellis.
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss9.png)
+
+\
+\
+\
+
+The following is the pseudocode for the forward algorithm.
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss10.png)
+
+\
+\
+
+The following is the statement of the definitional recursion of the forward algorithm.
+
+\
+
+1. Initialization:
+
+\
+
+$$
+\alpha_1(j) = \pi_jb_j(o_1) \ ,\ \ 1 \leq j \leq N
+$$
+
+\
+
+2. Recursion:
+
+\
+
+$$
+\alpha_t(j) = \sum_{i=1}^{N} \alpha_{t-1}(i)a_{ij}b_j(o_t) \ , \ \ 1 \leq j \leq N, \ 1 \leq t \leq T
+$$
+
+\
+
+3. Termination:
+
+\
+
+$$
+P(O|\lambda) = \sum_{i=1}^{N} \alpha_T(i)
+$$
+
+\
+\
+\
+
+#### Implementing the forward algorithm using the 'HMM' package:
+
+\
+
+```{r}
+# Initialise HMM
+library(HMM)
+hmm = initHMM(
+  States=c("C","H"),
+  Symbols=c(1,2,3),
+  startProbs=c(.2,.8),
+  transProbs=matrix(c(.5,.5,.4,.6),nrow=2,byrow=T),
+  emissionProbs=matrix(c(.5,.4,.2,.1,.4,.4),nrow=3,byrow=T)  # for some reason, the matrix order gets weird here
+)
+print(hmm)
+```
+
+```{r}
+# Sequence of observations
+observations = c(3,1)  # o_1, o_2
+
+# Calculate forward probabilities
+logForwardProbabilities = forward(hmm,observations)
+exp(logForwardProbabilities)
+```
+
+where, states C,H: states of $j$ and index 1,2 are the time step $t$ of $\alpha_t(j)$.
+
+\
+
+This is the same as the result of Fig. A.5.
+
+\
+\
+\
+\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
