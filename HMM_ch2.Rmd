@@ -136,6 +136,8 @@ Bivariate distributions:
 
 ![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images/ss18.png)
 
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images/ss23.png)
+
 \
 \
 
