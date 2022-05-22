@@ -422,7 +422,7 @@ The following figure shows an example of the forward trellis.
 
 \
 
-Each cell of the forward algorithm trellis $\alpha_t(j)$ represents the probability of being in state $j$ after seeing the first $t$ observations, given $\lambda = (A,B)$ (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
+Each cell of the forward algorithm trellis **$\alpha_t(j)$ represents the probability of being in state $j$ after seeing the first $t$ observations, given $\lambda = (A,B)$** (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
 
 The value of each cell $\alpha_t(j)$ is computed by summing over the probabilities of every path that could lead us to this cell. Formally, each cell expresses the following probability:
 
@@ -610,7 +610,7 @@ The following figure shows an example of the Viterbi trellis for computing the b
 
 \
 
-The idea is to process the observation sequence left to right, filling out the trellis. Each cell of the trellis, $v_t(j)$, represents the probability that the HMM is in state $j$ after seeing the first $t$ observations and passing through the most probable state sequence $q_1,...q_{t-1}$, given $\lambda = (A,B)$ (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
+The idea is to process the observation sequence left to right, filling out the trellis. Each cell of the trellis, **$v_t(j)$, represents the probability that the HMM is in state $j$ after seeing the first $t$ observations and passing through the most probable state sequence $q_1,...q_{t-1}$, given $\lambda = (A,B)$** (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
 
 \
 
@@ -866,7 +866,7 @@ Thus the **Baum-Welch** algorithm solves this by **iteratively estimating the co
 
 **_Backward probability_**:
 
-To understand the algorithm, it is crucial to define a useful probability related to the forward probability, called the **backward probability**. The backward probability $\beta$ is the probability of seeing the observations from time $t+1$ to the end, given that we are in state $i$ at time $t$ and given $\lambda = (A,B)$.
+To understand the algorithm, it is crucial to define a useful probability related to the forward probability, called the **backward probability**. The backward probability **$\beta_t(i)$ is the probability of seeing the observations from time $t+1$ to the end, given that we are in state $i$ at time $t$ and given $\lambda = (A,B)$** (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
 
 \
 
@@ -1016,7 +1016,7 @@ We also need a formula for recomputing the observation probability. This is the 
 \
 
 $$
-\hat{b}_j(v_k) = \frac{\sum_{t=1}^{T-1}\xi_t(i,j)}{\sum_{t=1}^{T-1}\sum_{k=1}^{N}\xi_t(i,k)} \tag{A.23}
+\hat{b}_j(v_k) = \frac{\mathrm{expected \ number \ of \ times \ in \ state} \ j \ \mathrm{and \ observing \ symbol} \ v_k}{\mathrm{expected \ number \ of \ times \ in \ state} \ j} \tag{A.24}
 $$
 
 \
@@ -1138,7 +1138,7 @@ A summary for the hidden Markov model for probabilistic sequence classification 
 
 - For HMM, we're concerned with **three fundamental problems**: Likelihood, Decoding, and Learning.
 
-- The computation of **Likelihood** of a particular observation sequence is done by the **forward** algorithm.
+- The computation of **likelihood** of a particular observation sequence is done by the **forward** algorithm.
 
 - The process of discovering the sequence of hidden states, given the sequence of observations, is known as **decoding** (or inference). The **Viterbi** algorithm is commonly used for decoding.
 
@@ -1148,17 +1148,6 @@ A summary for the hidden Markov model for probabilistic sequence classification 
 \
 \
 \
-
-
-
-
-
-
-
-
-
-
-
 
 
 
