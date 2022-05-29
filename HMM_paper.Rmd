@@ -286,7 +286,7 @@ Note that, Hidden Markov models should be characterized by **_three fundamental 
 
 \
 
-where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods (also called, emission probabilities)
+where, $A$: transition probability matrix (TPM) and $B$: emission probability matrix
 
 \
 \
@@ -421,8 +421,11 @@ The following figure shows an example of the forward trellis.
 ![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss7.png)
 
 \
+\
 
-Each cell of the forward algorithm trellis **$\alpha_t(j)$ represents the probability of being in state $j$ after seeing the first $t$ observations, given $\lambda = (A,B)$** (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
+**_Forward probability_**:
+
+Each cell of the forward algorithm trellis $\alpha_t(j)$ is called a **forward probability** and it represents **the probability of being in state $j$ after seeing the first $t$ observations, given $\lambda = (A,B)$** (where, $A$: transition probability matrix (TPM) and $B$: emission probability matrix).
 
 The value of each cell $\alpha_t(j)$ is computed by summing over the probabilities of every path that could lead us to this cell. Formally, each cell expresses the following probability:
 
@@ -473,7 +476,7 @@ $$
 
 \
 
-where, $\alpha_1(1)$: the previous forward path probability, $P(H|C)$: the transition probability, and $P(1|H)$: the state observation likelihood, and
+where, $\alpha_1(1)$: the previous forward path probability, $P(H|C)$: the transition probability (A), and $P(1|H)$: the emission probability (B), and
 
 \
 
@@ -483,7 +486,7 @@ $$
 
 \
 
-where, $\alpha_1(2)$: the previous forward path probability, $P(H|H)$: the transition probability, and $P(1|H)$: the state observation likelihood.
+where, $\alpha_1(2)$: the previous forward path probability, $P(H|H)$: the transition probability (A), and $P(1|H)$: the emission probabilty (B).
 
 \
 \
@@ -609,8 +612,11 @@ The following figure shows an example of the Viterbi trellis for computing the b
 ![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss11.png)
 
 \
+\
 
-The idea is to process the observation sequence left to right, filling out the trellis. Each cell of the trellis, **$v_t(j)$, represents the probability that the HMM is in state $j$ after seeing the first $t$ observations and passing through the most probable state sequence $q_1,...q_{t-1}$, given $\lambda = (A,B)$** (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
+**_Viterbi probability_**:
+
+The idea is to process the observation sequence left to right, filling out the trellis. Each cell of the trellis, $v_t(j)$ is called a **Viterbi probability**, and it represents **the probability that the HMM is in state $j$ after seeing the first $t$ observations and passing through the most probable state sequence $q_1,...q_{t-1}$, given $\lambda = (A,B)$** (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
 
 \
 
@@ -732,7 +738,7 @@ hmm = initHMM(
   Symbols=c(1,2,3),
   startProbs=c(.2,.8),
   transProbs=matrix(c(.5,.5,.4,.6),nrow=2,byrow=T),
-  emissionProbs=matrix(c(.5,.4,.2,.1,.4,.4),nrow=3,byrow=T)  # for some reason, the matrix order gets weird here
+  emissionProbs=matrix(c(.5,.4,.1,.2,.4,.4),nrow=2,byrow=T)
 )
 print(hmm)
 ```
@@ -761,13 +767,13 @@ This is the same as the result of Fig. A.10 where $v_2(1) = 0.064$ is the best s
 
 \
 
-The third and the last problem for HMMs is learning the parameters of an HMM, that is, $\lambda = (A,B)$ (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
+The third and the last problem for HMMs is learning the parameters of an HMM, that is, $\lambda = (A,B)$ (where, $A$: the transition probability matrix (TPM) and $B$: the emission probability matrix).
 
 \
 
 **_Learning_**:
 
-Given an observation sequence $O$ and the set of possible states in the HMM, learn the HMM parameters $A$ and $B$ (the transition probability matrix and the emission probability matrix).
+Given an observation sequence $O$ and the set of possible states in the HMM, learn the HMM parameters $A$ and $B$.
 
 \
 
@@ -803,7 +809,7 @@ $$
 
 $$
 \pi = \begin{bmatrix}
-\frac{1}{3} & \frac{2}{3}
+\frac{2}{3} & \frac{1}{3}
 \end{bmatrix}
 $$
 
@@ -866,7 +872,7 @@ Thus the **Baum-Welch** algorithm solves this by **iteratively estimating the co
 
 **_Backward probability_**:
 
-To understand the algorithm, it is crucial to define a useful probability related to the forward probability, called the **backward probability**. The backward probability **$\beta_t(i)$ is the probability of seeing the observations from time $t+1$ to the end, given that we are in state $i$ at time $t$ and given $\lambda = (A,B)$** (where, $A$: transition probability matrix (TPM) and $B$: a sequence of observation likelihoods).
+To understand the algorithm, it is crucial to define a useful probability related to the forward probability, called the **backward probability**. The backward probability **$\beta_t(i)$ is the probability of seeing the observations from time $t+1$ to the end, given that we are in state $i$ at time $t$ and given $\lambda = (A,B)$** (where, $A$: transition probability matrix (TPM) and $B$: emission probability matrix).
 
 \
 
@@ -1070,6 +1076,15 @@ where, $\sum_{t=1 \ s.t. \ O_t=v_k}^{T}$ means "sum over all $t$ for which the o
 \
 \
 
+<details>
+  <summary>Click for summarized view</summary>
+    ![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/IMG_1287.jpeg)
+    ![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/IMG_1288.jpeg)
+</details> 
+
+\
+\
+
 We now have ways in Eq. A.23 and Eq. A.28 to **re-estimate** the transition and observation probabilities $(A,B)$ from an observation sequence $O$, assuming that we already have a previous estimate of $A$ and $B$.
 
 \
@@ -1148,6 +1163,75 @@ A summary for the hidden Markov model for probabilistic sequence classification 
 \
 \
 \
+
+### 7. Important notations
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss3.png)
+
+\
+
+- $\alpha_t(j)$: **forward probability**; the probability of being in state j after seeing the first t observations, given $\lambda = (A,B)$.
+
+$$
+\begin{align*}
+\alpha_t(j) &= P(o_1,o_2,\dots,o_t,q_t=j|\lambda) \\ 
+ &= \sum_{i=1}^{N} \alpha_{t-1}(j)a_{ij}b_j(o_t)
+\end{align*}
+$$
+
+\
+
+- $v_t(j)$: **Viterbi probability**; the probabililty that the HMM is in state $j$ after seeing the first $t$ observations and passing through the most probable state sequence $q_1,\dots,q_{t-1}$, given $\lambda=(A,B)$.
+
+$$
+\begin{align*}
+v_t(j) &= \underset{q_1,\dots q_{t-1}}{\mathrm{max}} P(q_1,\dots,q_{t-1},o_1,\dots,o_t,q_t=j|\lambda) \\ 
+ &= \underset{i=1}{\overset{N}{\mathrm{max}}} \ v_{t-1}(i)a_{ij}b_j(o_t)
+\end{align*}
+$$
+
+\
+
+- $\beta_t(i)$: **backward probability**; the probability of seeing the observations from time $t+1$ to the end, given that we are in state $i$ at time $t$ and given $\lambda=(A,B)$.
+
+$$
+\begin{align*}
+\beta_t(i) &= P(o_{t+1},o_{t+2},\dots,o_T|q_t=i,\lambda) \\ 
+ &= \sum_{j=1}^{N} a_{ij}b_j(o_{t+1})\beta_{t+1}(j)
+\end{align*}
+$$
+
+\
+\
+\
+\
+
+### 8. Review of dynamic programming
+
+\
+
+Dynamic Programming is mainly an optimization over plain recursion. Wherever we see a recursive solution that has repeated calls for same inputs, we can optimize it using Dynamic Programming. The idea is to simply **store the results of subproblems, so that we do not have to re-compute them when needed later**. This simple optimization reduces time complexities from exponential to polynomial.
+
+\
+
+For example,
+
+\
+
+![](/Users/jaeyonglee/Documents/College/RStudio/HMM/HMM/images_paper/ss20.png)
+
+\
+
+we can see that the result of fib(2) are needed repeatedly when calculating fib(3) and fib(4), so we should avoid its re-computation by storing its result.
+
+\
+\
+\
+\
+
+
 
 
 
